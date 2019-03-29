@@ -1,0 +1,105 @@
+*******SYSTEM SOFTWARE**********
+Provides AGC with following characteristics:
+- Priority Based Cooperative Functioning
+- Preemptive Real-Time response
+- Interactive 
+- Fault-Tolerant
+- A computer with Virtual Machines (VM)
+
+Following are some of the exceptional features of AGC System Software:
+- Multitasking
+- Interpreter
+- Device Drivers
+- Waitlist
+- User Interface (Shell)
+- Mechanism for Fault Recovery
+
+***MULTITASKING***
+AGC HAS FOLLOWING THINGS TO DO SIMULTANEOUSLY:
+-MATHS
+-I/O WITH ITS DEVICES:
+	a. Service Interrupts when the DEVICE NEEDS ATTENTION
+	b. Regular Servicing of devices like updating the display with actions.
+	c. Real time control with instructions (like flashing a lamp when instructed by I/O channels or firing boosters when timed)
+
+* however, there's a SINGLE CPU so it must SWITCH BETWEEN THE TASKS (MULTITASKING). 
+
+---the principle of SCHEDULING for MULTITASKING---
+-The AGC priorotizes the job to run the job with higher priority before the ones with lower priority. 
+-It keeps on running a particular job and simultaneously checks if a JOB WITH HIGHER PRIORITTY is waiting in the line.
+-This checking is done every 20 ms, and the job with higher priority starts running and replaces the the job with a lower one.
+-The job with higher priority runs until it TERMINATES and is removed from the queue. The subsequent jobs will start running. 
+-The PROCESS BY WHICH JOB PRIORITIES ARE CHECKED EVERY 20MS AND LETS AGC RUN THE HIGHER PRIORITY JOBS IS CALLED "YIELD".
+-"YIELD" makes AGC "PRIORITY-BASED COOPERATIVE MULTITASKING COMPUTER".
+-JOB ENTRY is described by a 12 word data structure in the memory which contains a PC and BB register for the point where the job will start or continue running. 
+-It will also contain a last word with DISABLED FLAG (0) which forms the SIGN BASED and SIZE BASED priority for the jobs.
+-When the value in this word or memory is MINUS ZERO, the job is empty.
+-The +ve value denotes that the job is currently active (running or waiting in the queue).
+-Negating this value will put the job to sleep and it will not pop-up in the queue. (However this job can be woke up by again negating the values).
+-THERE ARE 7 SUCH JOB ENTRIES IN THE MEMORY.
+-FROM THESE, JOB ENTRY NUMBERED 0 IS THE FIRST IN THE LIST AND IS ALWAYS THE CURRENTLY RUNNING ONE. REST OF THE ACTIVE JOBS ARE IN THE QUEUE. 
+-IF ANOTHER JOB WITH HIGHER PRIORITY IS CREATED (GREATRER POSITIVE VALUE THEN THE RUNNING JOB), THE YIELD OPERATION WILL OCCUR AND THE JOB WITH HIGH PRIO WILL START RUNNING. 
+-The FIRST EIGHT words in the JOB ENTRY can be used for LOCAL STORAGE for the JOB.
+-Since its always JOB ZERO thats running, these addresses are conveniently located in the SAME ADDRESSES IN THE MEMORY. 
+-The "Executive Function" is the set of sub-routines that controls the job data structure in the following manner:
+
+a. NOVAC- a new job can be created by putting appropriate values in PC and BB register.
+b. PRIOCHNG- change the priority of the current job. 
+c. JOBSLEEP- put current job to sleep. 
+d. JOBWAKE- wake up a given job. 
+e. ENDOFJOB- end the current job.
+
+***NOTE*** "YIELD" is not an executive function but a TWO INSTRUCTION SEQUENCE (ccs NEWJOB, call CHANG1) that checks the NEWJOB variable in which the executive always holds
+the idea of highest priority job. If JOB0 is the highest priority job, there's nothing to do but if it isn't, there is CHANGE JOB subroutine which switches to that job. 
+***NEWJOB isn't just the VARIABLE IN MEMORY but also the WATCHDOG. If it isn't accessed REGULARLY, it will imply that system software is not responding and cause a SYSTEM
+RESET.
+
+----MATH SUPPORT----
+- A lot of the code on AGC does scientific calculations. 
+- Doing simple calculations like sum of a simple product of scalar and vector would require hundreds of codes on AGC.
+- Therefore, there are library codes which provide all kind of operations on SINGLE, DOUBLE, and TRIPLE precision on fixed point values on VECTORS and MATRICES (this forms 
+a base of MISSION SOFTWARE).
+- It also provides a SOFTWARE BASED MULTIPURPOSE ACCUMULATOR CALLED MPAC which can HOLD DOUBLE, TRIPLE, and VECTOR value depending on the different flag named MODE.
+- A 38 word STACK is also provided in the software because sometimes calculations may require to STORE the INTERMEDIATE RESULTS. 
+- If the job is using a MATH CODE, the MPAC, the MODE FLAG, and the STACK POINTER will be stored in the remaining fields of Core Set Entry (part of Job Entry). 
+- The STACK is a part of data structure called VAC (Vector Accumulator), which will be pointed to by the CORE SET ENTRY. 
+- The job can be created with or without VAC depending on which subroutine is used in creating it. For VAC this is used:
+NOVAC- create new job
+FINDVAC- create new job + VAC
+
+---INTERPRETIVE CODE---
+-There is a new and compact interpretive language in AGC software that is interpreted at the runtime. 
+-The interpreter language uses more registers in addition to the MPAC.
+-It uses two index registers (X1 and X2), two Step registers (S1 and S2) and it's own Link Register (LR).
+-The encoding manages to fit TWO 7-bit opcodes in 1 word, which allows for 128 opcodes. And this is where it explains why there is a SHR7 function (it helps to switch between
+opcodes in system software). 
+-Two Operands are store in the words following the OPCODE allowing 14 bit addresses. 
+-The significance of the 14 bit addresses lie in the fact that Interpretive code doesn't have to work with the complicated memory layer anymore, it allows addressing
+about half of the ROM at the same time, and the LOWEST KW of each half, RAM is visible. So the "interpretive code" can access both these memory layouts. 
+-Full set of INTERPRETER INSTRUCTIONS at 39:57.
+-NOTE: Regular MACHINE CODE and the INTERPRETER CODE can be mixed used together inside a job entry. 
+-this is possible by the EXIT Interpreter instruction, which will allow to execute the REGULAR MACHINE CODE at the next address.
+-CALL INTPRET will inversely shift to the Interpretive mode. 
+
+
+----THE SUPPORT TO DEVICE DRIVERS ALONG WITH THE LONG RUNNING MATH TASKS-----
+- When a device needs COMPUTER response in between a long running math task, it is done by generating an INTERRUPT.
+- Example: When DISKEY keypress needs attention, it causes interrupt.
+- By this, the current job will be interrupted and the interrupt handler will read the entered input and return as quickly as possible. If a long delay is caused because of 
+some more work to do, it can schedule a job for later.
+
+
+-----REGULAR SERVICING OF VARIOUS DEVICES------
+- The devices which has to be updated (serviced) regularly, FOR EXAMPLE: DISKEY DISPLAY which has a very less room for display. 
+- So a 120ms timer, is present which read data from and write data to certain devices every 120 ms by generating automatic interrupts (after 120ms each).
+- So the driver of the DISKEY DISPLAY is triggered every 120ms by the microtimer and this causes interrupts and updates the display regularly.
+- The 120ms timer interrupts the cycle through EIGHT PHASES and the drivers are DISTRIBUTED among these EIGHT PHASES to avoid longer interrupts during any cycle. 
+- For some devices which need to operate at exact time, there is a different mechanism. For example if a device decides that it needs to TURN ON LAMP TWICE AT EXACT TIMES.
+- For such tasks, Job A will TURN ON THE LAMP IMMEDIATELY and generate three another waitlist tasks at given intervals (^t). First task will turn off the lamp, another will
+turn on, and the third one will turn it off again. 
+- But there has to be some storage to execute these ^t. These ^t are stored in data structure LST 1 in which first entry will always currently counting down in the TIMER register.
+- And the LST2 data structure contains a pair of PC and BB for each ^t in LST1 which will allow the execution of task at specific time. 
+- Again, there are subroutines to CREATE a NEW TASK  and END CURRENT TASK.
+ 	a. WAITLIST-- Create new task
+	b. TASKOVER-- End current task 
+

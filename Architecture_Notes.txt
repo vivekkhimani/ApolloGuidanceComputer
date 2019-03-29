@@ -1,0 +1,155 @@
+****ARCHITECTURE***
+1) INSTRUCTION SET:
+-THE INSTRUCTION SET OF MORDERN ARM PROCESSOR FOR UNBEATABLE PERFORMANCE (ARMV8) HAVE NEARLY 400 INSTRUCTIONS.
+-SUBLEQ IS THE SIMPLEST LANGUAGE WHICH SHOWS THAT A SINGLE INSTRUCTION CAN BE ENOUGH TO SOLVE SOME OF THE PROBLEMS.
+-THEREFORE, SUBLEQ=== SIMPLEST INSTRUCTION, ARMV8=== MORE COMPLEX! 
+-MORE COMPLEX INSTRUCTION = HIGH CODE DENSITY = HIGHER PERFORMANCE = HIGHER COMPLEXITY OF CPU
+-SUBLEQ = 1 INSTRUCTION; ARMV8= 400; AGC== IN BETWEEN (36)
+
+---mMEMORY MODEL IS THE CORNERSTONE OF INSTRUCTION SET AS IT IS USED TO STORE INSTRUCTIONS. 
+--- MEMORY CONSISTS OF 4096 CELLS, NUMBERED FROM 000 TO FFF IN HEXADECIMAL. 
+--- EACH CELL CAN CONTAIN A MAXIMUM OF 15 BIT WORDS WHICH IS FROM 0000-7FFF in hexadecimal.
+--- ALMOST ALL THE CHANGES TAKING PLACE IN A MEMORY GOES THROUGH THE 15 BIT ACCUMULATOR (ONE OF THE REGISTERS)
+--- AGC HAS SINGLE ADDRESS SPACE FOR CODE AND DATA WHICH MAKES IT A VON NEUMANN MACHINE. 
+--- WE CAN COPY, ADD, SUBTRACT, AND MULTIPLY DATA BETWEEN AN ACUMMULATOR AND AGC. 
+--- DIFFERENT DATA IN THE MEMORY CAN HAVE DIFFERENT MEANINGS BASED ON HOW THEY ARE INTERPRETED. 
+--- PC HOLDS THE ADDRESS OF THE INSTRUCTION WHICH IS TO BE EXECUTED NEXT AND THE INSTRUCTION SET PERFORMS THE RESPECTIVE OPERATIONS BETWEEN THE MEMORY AND ACCUMULATOR. 
+--- THE GENERALIZED VERSION OF THE INSTRUCTIONS_____ ld a, [k], where [k] is the place holder for memory address and a represents arguement. (there are different commands 
+for different operations. the given command is example of LOADING the value from given memory place (k) to the accumulator. similarly____add a, [k], adds the value from given
+memory space in [k] to the accumulator, and ld [k], a____stores the value from an accumulator to given [k] in the memory. SCREENSHOT DIAGRAM FROM YOUTUBE VIDEO--8:00)
+---PLEASE SCREENSHOT THE FRAME WHEN THEY EXPLAIN WHAT DIFFERENT VALUES ON A INSTRUCTION CARD MEAN. 
+--- PLEASE LOOK AND UNDERSTAND FROM 8:00 WHILE WRITING TO UNDERSTAND IN DETAIL THE FUNCTIONS OF INSTRUCTIONS... JUST UNDERSTAND 
+
+
+/////HOW ARE NEGATIVE NUMBERS STORED IN AGC???////
+--they used ONE's COMPLEMENT (for at least 4 bits numbers up to 7) where the BITS are reversed (0 becomes 1 and vice-versa)... However, this had a drawbacks like TWO diff 
+representations for -0 and +0, but most of the computers in 1960s used ONE's COMPLEMENT.
+-- logic behind ONE's COMPLEMENT---- it was possible to represent numbers from 1 to 15 on 4 bits using decimal. So numbers from 0 to 7 represent +ve unsigned numbers and 
+8-15 represent negative numbers. Which makes it a perfect complement and it just requires REVERSAL OF BITS for NEGATION. Refer to diagram at 10:38.
+---WHEN NEGATIVE AND POSITIVE NUMBERS ARE ADDED.... NEGATIVE NUMBERS ARE REPRESENTED AS THEIR UNSIGNED COMPLEMENT (for example- (-5) is represented as 10) )
+--- Example of addition- (-5) + (2)
+			=(10) + (2)
+			=12 == (-3)
+
+//THE CONCEPT OF CARRY//
+A. END AROUND CARRY (NEED TO LOOK AT THE DIAGRAM FOR THE REASON BEHIND USING WORD END-AROUND, SO PLEASE REFER 11:32): 
+EXAMPLE=== (6) - (4)
+	== (6) + (-4)
+	== (6) + (11)
+	== 17 (BUT 15 IS THE LAST NUMBER ON CIRCLE, SO CIRCLE IS COMPLETED AND WE GET 1, WHICH IS REPRESENTED WITH A CARRY)
+	== 1 AND CARRY (CARRY IS ADDED AS 1 TO THE END RESULT IN ONE'S COMPLEMENT)
+	== 2 (THIS IS THE CORRECT RESULT)
+
+B. POSITIVE OVERFLOW: WHEN WE ARE ADDING TWO POSITIVE NUMBERS AND THE CORRESPONDING RESULT DOES NOT FIT INTO THE POSITIVE NUMBER SPACE, IT IS CALLED POSITIVE OVERFLOW.
+EXAMPLE=== (7) + (1)
+	== (8)
+	== (-7) ---- ON THE CIRCLE WHICH IS INCORRECT IN ACTUAL. 
+	== THIS IS CALLED A POSITIVE OVERFLOW. 
+
+C. NEGATIVE OVERFLOW: WHEN WE ARE ADDING TWO NEGATIVE NUMBERS AND THE CORRESPONDING RESULT DOES NOT FIT INTO THE NEGATIVE NUMBER SPACE, IT IS CALLED NEGATIVE OVERFLOW. 
+EXAMPLE== (-7) - (1)
+	= (-7) + (-1)
+	= (8)  + (14)
+	= 6 WITH A CARRY == 7(ON THE CIRCLE, WHICH IS INCORRECT IN ACTUAL)
+	= THIS IS CALLED A NEGATIVE OVERFLOW.
+
+***** BUT THERE'S A WAY IN WHICH ACCUMULATOR RECORD THIS INFORMATION AND MAKES THE NECESSARY REVISION ********
+EXAMPLE: THE ACCUMULATOR STORES THE OVERFLOWED VALUE BUT ALSO HAS AN EXTRA BIT WHICH RECORD THAT THERE'S AN OVERFLOW. SO THE 7 IN ABOVE RESULT, IS STORED WITH A "V" WHICH 
+RESPRESENTS OVERFLOW. SO, WHEN THIS OVERFLOWED VALUE IS STORED IN A MEMORY BLOCK, FIRST THE ACCUMULATOR SENDS "7" IN THAT BLOCK AND IT IS STORED. THEN IT WRITES +1 OR -1 
+INTO THE ACCUMULATOR BLOCK DEPENDING ON THE POSITIVE OR NEGATIVE OVERFLOW. AND THIS ACTS AS A SIGNED CARRY AND IS STORED IN HIGHER ORDER BLOCK. THESE TWO BLOCKS TOGETHER ARE 
+STORED AS DOUBLE BLOCK OR DOUBLE WORD RESULT IN THE MEMORY.   
+
+*** 8 REGISTERS are assigned FIRST 8 BLOCKS in the memory numbered from (000 to 007).***
+Hence, these registers can be used for operations whenever required by addressing a particular block from the memory. 
+//This allows greater flexibility in the instructions set//
+Example: We can load A with the content in B by Loading the content in A by addressing the B block of the memory ( ld a, [b])
+We can load 0 in A by loading the content from 0 register which is numbered 007 in the memory. ( ld a, [007])
+WE can increment A by incrementing the memory block at A, (inc [000])
+
+
+***** DIVISION OF MEMORY *****
+1) total comprised of 4096 words from 000 to FFF. 
+2) Original memory was composed of 1072 words of RAM and 3072 words of ROM (it was changed as and when additional space was required for Software Development).
+
+
+****DIVISION OF RAM *****
+1) RAM: 768 words of FIXED RAM ; 256 words of BANKED RAM
+2) The 7 words of the registers are the parts of FIXED RAM. 
+3) The BANKED RAM has almost 8 (0 to 7)  banks stacked over it. The register EB is used to switch between this banks. When EB is POINTED (using double index) to 0, the bank numbered 
+zero occupuies the banked memory. while if EB is 5, bank numbered 5 is visible or occupies that area.
+4) The FIXED RAM in the RAM area is not occupied by anything else but the FIXED BANKS 0,1, and 2.
+
+****DIVISION OF ROM ****
+1) ROM: 1024 words of BANKED ROM ; 2048 words of FIXED ROM (the placement of fixed and banked is different then in ram)
+2) The BANKED ROM has almost 32 banks stacked over it. The register FB is used to switch between this banks. The same pointing or indexing process as EB is to be used. 
+3) However, more then 32 banks of ROM was added last minute which was called SUPERBANK. This SUPERBANK can be switched in the place of UPPER MOST 8 banks when all of them have been 
+used and later can be used with the same numbers as those of the existing 8 banks. 
+4) This makes a total of 40 banks of fixed ROM. 
+5) The FIXED ROM in the ROM area is occupied by the BANKS number 2 and 3 which cannot be changed. 
+
+***** THE PRIMARY EIGHT REGISTERS, FUNCTIONING, and ORDERING ******
+A (000)-- USED AS PRIMARY ACCUMULATOR
+B (001)-- USED WITH A TO STORE DOUBLE WORD VALUES
+LR (002)-- IT STORES THE TEMPORARY VALUE FOR PC DURING "CALL" INSTRUCTION AND RETURNS IT BACK TO PC ON "RET" INSTRUCTION. 
+EB (003)-- USED TO SWITCH BETWEEN DIFFERENT RAM BANKS IN THE BANKED RAM AREA. 
+FB (004)-- USED TO SWITCH BETWEEN DIFFERENT ROM BANKS IN THE BANKED ROM AREA. 
+PC (005)-- CONTROLS AND KEEPS TRACK OF PROPER EXECUTION AND INSTRUCTIONS. 
+BB (006)-- IT STORES THE COMBINED VALUE FOR EB AND FB, SO CAN BE USED WITH "CALLFBB" INSTRUCTION TO SWITCH EB, FB, AND PC ALTOGETHER. 
+0 (007)-- ZERO REGISTER. WHEN WE READ FROM IT WE GET ZERO, AND WHEN WE WRITE ON IT A MEMORY FROM PARTICULAR CELL GETS DISCARDED. 
+
+***** THERE ARE EIGHT MORE SPECIAL LOCATIONS EXCEPT REGISTERS CALLED SHADOW AREA******
+A'(008)--
+B'(009)--
+LR'(00A)--
+00B --NO EB'
+00C --NO FB'
+PC'(00D)-- Temporarily stores PC in the case of an interrupt. 
+BB'(00E)--
+IR'(00F)-- Temporarily stores IR in the case of an interrupt.
+
+***** THERE ARE FOUR MORE EDITING REGISTERS WHICH MAKE UP FOR DIFFERENT SHIFT AND ROTATE FUNCTIONS******
+ROR (010) -- When reading a 15 bit value, this will cause the bits to move right by one space and the last bit (from the right) will be rotated and become the left most bit. 
+SHR (011) -- Shifts all bits by one place to the right and discards the last bit (from the right). And add zero bit to the left most empty bit. 
+ROL (012) -- When reading a 15 bit value, this will cause the bits to move left by one space and the last bit (from the left) will be rotated and become the right most bit.
+SHR7 (013) -- Shifts all bits by SEVEN places to the right and discards the last SEVEN bits (from the right). And it adds SEVEN ZEROES to the SEVEN LEFT MOST EMPTY BITS.
+
+
+**********I/O CHANNELS**************
+-- Refer to diagram at 22:31 minutes. 
+-- CPU at the centre.
+-- connected to MEMORY (which is already discussed).
+-- And other peripherals (inputs-outputs) like Screen and Keyboard.
+-- We have already seen address space for memory. 
+-- However, there is different address space for I/O devices.
+-- There are 512 I/O channels labelled from 000 to 1FF.
+-- Each I/O channel is 15 bit in size, similar to memory cells. 
+-- "in" and "out" instructions can read words FROM and can write WORDS to I/O channnels. 
+-- These channels contain 15 INDIVIDUAL CONTROL BITS FROM ANY DEVICES. 
+-- These CONTROL BITS can be used to turn on/off (basically control) the devices (eg. lamp).  
+
+
+**** AFTER REGISTERS,SHADOW AREA, EDITING REGISTERS, THERE IS ANOTHER SPECIAL AREA CALLED "COUNTERS" (FROM 14 to 31)--------
+-- Alike I/O devices "Counters" connect to external devices, but they don't send bits or whole words back and forth. 
+-- They are CONTROLLED by HARDWARE PULSES or cause HARDWARE PULSES. 
+-- For example, ONE COUNTER CHANNEL can get INCREMENTED by 1 everytime a PULSE is generated, while other COUNTER CHANNEL take the number stored into them by coding countdown
+and generating pulses. 
+
+*****INTERRUPTS******
+-- When I/O devices need using of the CPU they can INTERRUPT normal execution. 
+-- Next to PC there is a register called IR. IR stores the value (or OPCODE) in the given PC. When interrupt handlers cause an INTERRUPT, the PC at that point is copied into
+shadowed memory location PC' and IR is copied to IR'.
+-- The interrupt causes the PC to jump to some specified location (which depends on the type of an interrupt). 
+-- "iret" instruction is used after the interrupt to copy back the PC' and IR' into the respective PC and IR registers so the normal execution can continue.
+-- SO, the PC' and IR' from the SHADOWED REGISTERS are automatic used by computer in case of an interrupt. 
+-- the remaining SHADOWED registers are RESERVED  for SAVING and RESTORING using a SOFTWARE if necessary. 
+-- Howevwer, OVERFLOW CONDITION FLAG cannot be saved or restored. Therefore, during an OVERFLOW, the interrupts will be DISABLED until the next STORE INSTRUCTION (which 
+terminated the overflow). 
+-- The 11 INTERRUPT HANDLERS reside in FIXED ROM starting from 800.
+-- There are 4 WORDS for EACH INTERRUPT ENTRY.
+-- Typical INTERRUPT ENTRY CODE 
+	a.SAVES A and B (xchg ab, ab').
+	b.LOADS A and B with the PC of actual handler ( ld ab, [k1],[k2])
+	c.JUMPS ther. (call fbb---fbb function is used to switch the ram bank, rom bank, and PC altogether).
+--Interrupt ZERO is special, as it is the ENTRY point on RESET. 
+-- There is a SPECIAL LOCATION at 037 which needs to be READ FOR every 0.64 seconds, otherwise HARDWARE will decide that SYSTEM SOFTWARE is unresponsive and cause the
+system to reset. 

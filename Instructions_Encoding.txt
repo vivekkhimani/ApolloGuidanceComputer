@@ -1,0 +1,82 @@
+**********INSTRUCTIONS ENCODING********************
+Encoding of instructions means representing entire INSTRUCTION as a BINARY VALUE. 
+
+In ld a, [k] instruction: the FIRST THREE BITS are the OPCODE and represents ld a; and the remaining bits encodes the memory address ([k]) in binary. 
+This allows for the total of 8 instr:
+
+OPCODE		ADDRESS			INSTRUCTION
+000		memory address		call k
+001		memory address		ccs [k]
+010		memory address		inc [k]
+011		memory address		ld a, [k]
+100		memory address		ldc a, [k]
+101		memory address		ld [k], a
+110		memory address		add a, [k]
+111		memory address		and a, [k]
+
+***THESE are the only possible instructions using the above format. But there are a lot more than these.
+
+**********ADDRESS ENCODING**********
+- RAM addresses always start with 00.
+- ROM addresses start with ANYTHING EXCEPT 00.
+
+Going back to the INSTRUCTION ENCODING TABLE MENTIONED ABOVE,
+1) The STORE instruction(ld [k], a) is only possible on RAM. So its next two bits after the opcode are filled with 00 (for RAM) and it has to be filled by remaining 10 address bits
+instead of 12.
+* This makes the ROOM for another THREE RAM ONLY INSTRUCTIONS using store. Hence, it forms a set of 4 RAM ONLY INSTRUCTIONS in the following manner:
+
+OPCODE		ADDRESS (FIRST TWO RAM ONLY BITS)		INSTRUCTIONS
+101		00						INDEX (this will be explained later)
+101		01						xchg ab, [k]
+101		10						ld [k], a
+101		11						xchg a, [k]
+
+
+2) Same happens with INCREMENT instruction (inc [k]). It can only be used for the RAM and so it has to be filled by remaining 10 bits instead of 12. This helps us forming another
+set of RAM only instructions.
+
+OPCODE		ADDRESS (FIRST TWO RAM ONLY BITS)		INSTRUCTIONS
+010		00						add [k], ab
+010		01						xchg b, [k]
+010		10						inc [k]
+010		11						add [k], a
+
+3) Same happens with CCS, which shares OPCODE with only JUMP, which only uses ROM addresses.
+
+OPCODE		ADDRESS	(FIRST TWO BITS)			INSTRUCTIONS
+001		00 (RAM ONLY)					ccs [k]
+001		any except 00					jmp
+
+4) JUMPS to the BANK registers aren't practically possible, so the call opcode is shared with the sti, cli, and EXTEND instructions in the following manner:
+OPCODDE		ADDRESS						INSTRUCTIONS
+000		memory address					call k
+000		000000000010 (calls LR-002)			return 
+000		000000000011 (calls EB-003)			sti
+000		000000000100 (calls FB-004)			cli
+000		000000000110 (calls BB-006)			EXTEND
+
+*** NOW EXTEND IS THE PREFIX AND IT IS CAPABLE TO CHANGE THE MEANING OF THE OPCODE OF THE NEXT INSTRUCTION AND THIS ALLOWS FOR THE SECOND SET OF TWO WORD INSTRUCTIONS***
+
+***INDEX ADDRESSING IS ACHIEVED BY USING INDEX PREFIX (IN THE 101 RAM ONLY OPCODE GROUP MENTIONED ABOVE). THIS CONSISTS OF TWO INSTRUCTION WORDS AS FOLLOWS. 
+
+1) INDEX
+2) ld a, [k]
+
+Represented in following manner:
+
+OPCODE		ADDRESS						INSTRUCTIONS
+101		00 (ONLY RAM)					INDEX
+011		RAM OR ROM					ld a, [k]
+
+INDEX is an ACTUAL INSTRUCTIONS. When these instructions are executed TOGETHER, this is equivalent to ld a, [k1 + [k2]] instruction, where k1- index address; k2- memory address. 
+- If an INTERRUPT is generated while Indexing, the IR' contains effective instruction code which can be restored at the end of an interrupt handler. 
+
+*** iret- INDEX ENCODING WITH SPECIAL MEANING. ***
+iret is used to return back to the original PC with the same OPCODE value when an INTERRUPT is generated. This is done by restoring the original OPCODE value from IR' which 
+uses the principle of INDEX instruction. Therefore, both of them use the same OPCODE.
+
+OPCODE		ADDRESS						INSTRUCTIONS
+101		00 (FIRST TWO BITS)				INDEX
+101		000000001111 (IR'-00F)				iret
+		
+

@@ -1,0 +1,24 @@
+
+
+---------------/*/*/*/*/**/ IO CHANNELS INSTRUCTIONS /*/*/*/*/*/-----------------------
+1) in a, [kc] --- to provide an INPUT in the I/O channels. 
+2) out [kc], a --- to generate an output from the I/O channels. 
+3) out| [kc], a --- SENDS individual bits for the control of devices. 
+4) out& [kc], a --- CLEARS individual bits to turn off the devices or reversal.
+5) in| a, [kc] --- GETS individual bits from other devices (which in turn receives bits from users). 
+6) in& a, [kc] ---CLEARS the received individual bits.   
+7) in^ a, [kc] -- DOES not take an input if two inputs are same. 
+
+
+8) and a, [k] --- For AND there is also a DEDICATED INSTRUCTION which works on "a" and memory. (This is the ONLY BOOLEAN OPERATION FOR REGISTER and MEMORY.. Others are 
+restricted to I/O channels.)
+
+*******************INTERRUPT************************
+1) iret -- Used after an interrupt to copy back the PC' and IR' into PC and IR so that normal execution of the code can continue. 
+2) int k -- PAUSE interrupts in SOFTWARE.
+3) cli -- Enables INTERRUPT globally.
+4) sti -- Disables INTERRUPT globally. 
+
+---------------THIS COMPLETES THE INSTRUCTION SET----------------------
+
+
